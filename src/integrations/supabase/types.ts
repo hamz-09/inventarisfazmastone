@@ -14,16 +14,198 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      barang: {
+        Row: {
+          created_at: string
+          harga_beli: number
+          harga_jual: number
+          id: string
+          kategori: string
+          nama_barang: string
+          stok: number
+          supplier: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          harga_beli?: number
+          harga_jual?: number
+          id?: string
+          kategori?: string
+          nama_barang: string
+          stok?: number
+          supplier?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          harga_beli?: number
+          harga_jual?: number
+          id?: string
+          kategori?: string
+          nama_barang?: string
+          stok?: number
+          supplier?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      detail_transaksi: {
+        Row: {
+          barang_id: string
+          created_at: string
+          harga: number
+          id: string
+          jumlah: number
+          transaksi_id: string
+        }
+        Insert: {
+          barang_id: string
+          created_at?: string
+          harga?: number
+          id?: string
+          jumlah?: number
+          transaksi_id: string
+        }
+        Update: {
+          barang_id?: string
+          created_at?: string
+          harga?: number
+          id?: string
+          jumlah?: number
+          transaksi_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "detail_transaksi_barang_id_fkey"
+            columns: ["barang_id"]
+            isOneToOne: false
+            referencedRelation: "barang"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "detail_transaksi_transaksi_id_fkey"
+            columns: ["transaksi_id"]
+            isOneToOne: false
+            referencedRelation: "transaksi"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dokumentasi: {
+        Row: {
+          created_at: string
+          deskripsi: string | null
+          file_url: string
+          id: string
+          kategori: string | null
+          nama_file: string
+          relasi_id: string | null
+          tags: string[] | null
+          tipe_file: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deskripsi?: string | null
+          file_url: string
+          id?: string
+          kategori?: string | null
+          nama_file: string
+          relasi_id?: string | null
+          tags?: string[] | null
+          tipe_file?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deskripsi?: string | null
+          file_url?: string
+          id?: string
+          kategori?: string | null
+          nama_file?: string
+          relasi_id?: string | null
+          tags?: string[] | null
+          tipe_file?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transaksi: {
+        Row: {
+          created_at: string
+          diskon: number
+          id: string
+          metode_pembayaran: string
+          nomor_invoice: string
+          pajak: number
+          status: string
+          subtotal: number
+          total: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          diskon?: number
+          id?: string
+          metode_pembayaran?: string
+          nomor_invoice: string
+          pajak?: number
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          diskon?: number
+          id?: string
+          metode_pembayaran?: string
+          nomor_invoice?: string
+          pajak?: number
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "staff" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +332,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "staff", "user"],
+    },
   },
 } as const
