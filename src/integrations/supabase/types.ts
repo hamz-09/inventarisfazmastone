@@ -136,6 +136,7 @@ export type Database = {
           created_at: string
           diskon: number
           id: string
+          jumlah_bayar: number
           metode_pembayaran: string
           nomor_invoice: string
           pajak: number
@@ -149,6 +150,7 @@ export type Database = {
           created_at?: string
           diskon?: number
           id?: string
+          jumlah_bayar?: number
           metode_pembayaran?: string
           nomor_invoice: string
           pajak?: number
@@ -162,6 +164,7 @@ export type Database = {
           created_at?: string
           diskon?: number
           id?: string
+          jumlah_bayar?: number
           metode_pembayaran?: string
           nomor_invoice?: string
           pajak?: number

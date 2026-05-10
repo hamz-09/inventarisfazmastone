@@ -30,6 +30,8 @@ export default function Penjualan() {
   const [diskon, setDiskon] = useState(0);
   const [pajak, setPajak] = useState(0);
   const [metodePembayaran, setMetodePembayaran] = useState("cash");
+  const [statusBayar, setStatusBayar] = useState<"belum_bayar" | "dp" | "lunas">("lunas");
+  const [jumlahBayar, setJumlahBayar] = useState(0);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [transaksiList, setTransaksiList] = useState<any[]>([]);
@@ -78,7 +80,9 @@ export default function Penjualan() {
     if (cart.length === 0) return;
     setLoading(true);
     try {
-      const nomorInvoice = `INV-${Date.now()}`;
+      const d = new Date();
+      const nomorInvoice = `FZ/${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getFullYear()).slice(-2)}/${String(Date.now()).slice(-5)}`;
+      const bayar = statusBayar === "lunas" ? total : statusBayar === "belum_bayar" ? 0 : jumlahBayar;
       const { data: transaksi, error: tErr } = await supabase.from("transaksi").insert({
         nomor_invoice: nomorInvoice,
         total,
@@ -86,7 +90,8 @@ export default function Penjualan() {
         diskon,
         pajak,
         metode_pembayaran: metodePembayaran,
-        status: "lunas",
+        status: statusBayar,
+        jumlah_bayar: bayar,
         user_id: user?.id,
       }).select().single();
 
@@ -106,10 +111,12 @@ export default function Penjualan() {
         await supabase.from("barang").update({ stok: c.barang.stok - c.jumlah }).eq("id", c.barang.id);
       }
 
-      toast({ title: "Transaksi Berhasil!", description: `Invoice: ${nomorInvoice}` });
+      toast({ title: "Transaksi & Invoice Dibuat!", description: `Invoice: ${nomorInvoice}` });
       setCart([]);
       setDiskon(0);
       setPajak(0);
+      setStatusBayar("lunas");
+      setJumlahBayar(0);
       setOpen(false);
       loadBarang();
       loadTransaksi();
@@ -214,6 +221,28 @@ export default function Penjualan() {
                   </Select>
                 </div>
 
+                <div>
+                  <Label>Status Pembayaran</Label>
+                  <Select value={statusBayar} onValueChange={(v: any) => { setStatusBayar(v); if (v === "lunas") setJumlahBayar(total); else if (v === "belum_bayar") setJumlahBayar(0); }}>
+                    <SelectTrigger className="bg-secondary border-border mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border">
+                      <SelectItem value="belum_bayar">Belum Bayar</SelectItem>
+                      <SelectItem value="dp">DP / Setengah</SelectItem>
+                      <SelectItem value="lunas">Lunas</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {statusBayar === "dp" && (
+                  <div>
+                    <Label>Jumlah Dibayar (DP)</Label>
+                    <Input type="number" value={jumlahBayar} onChange={(e) => setJumlahBayar(parseFloat(e.target.value) || 0)} min={0} max={total} className="bg-secondary border-border mt-1" />
+                    <p className="text-xs text-muted-foreground mt-1">Sisa: {formatCurrency(Math.max(0, total - jumlahBayar))}</p>
+                  </div>
+                )}
+
                 <div className="glass-card rounded-lg p-4 space-y-2">
                   <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
                   {diskon > 0 && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Diskon ({diskon}%)</span><span className="text-destructive">-{formatCurrency(diskonAmount)}</span></div>}
@@ -256,8 +285,8 @@ export default function Penjualan() {
                       <td className="p-4 font-medium">{formatCurrency(t.total)}</td>
                       <td className="p-4 hidden sm:table-cell capitalize text-muted-foreground">{t.metode_pembayaran}</td>
                       <td className="p-4">
-                        <span className={`text-xs px-2 py-1 rounded-full ${t.status === "lunas" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
-                          {t.status}
+                        <span className={`text-xs px-2 py-1 rounded-full capitalize ${t.status === "lunas" ? "bg-success/10 text-success" : t.status === "dp" ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}>
+                          {t.status === "belum_bayar" ? "Belum Bayar" : t.status === "dp" ? "DP" : "Lunas"}
                         </span>
                       </td>
                     </tr>

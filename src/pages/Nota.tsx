@@ -12,6 +12,7 @@ interface TransaksiDetail {
   subtotal: number;
   diskon: number;
   pajak: number;
+  jumlah_bayar: number;
   metode_pembayaran: string;
   status: string;
   created_at: string;
@@ -85,12 +86,17 @@ export default function Nota() {
                     <p className="font-heading font-semibold text-primary">{t.nomor_invoice}</p>
                     <p className="text-xs text-muted-foreground">{new Date(t.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${t.status === "lunas" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
-                    {t.status}
+                  <span className={`text-xs px-2 py-1 rounded-full capitalize ${t.status === "lunas" ? "bg-success/10 text-success" : t.status === "dp" ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}>
+                    {t.status === "belum_bayar" ? "Belum Bayar" : t.status === "dp" ? "DP" : "Lunas"}
                   </span>
                 </div>
-                <p className="text-xl font-heading font-bold mb-4">{formatCurrency(t.total)}</p>
-                <Button onClick={() => viewNota(t)} variant="secondary" className="w-full" size="sm">
+                <p className="text-xl font-heading font-bold mb-1">{formatCurrency(t.total)}</p>
+                {t.status !== "lunas" && (
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Dibayar: {formatCurrency(t.jumlah_bayar || 0)} · Sisa: {formatCurrency(t.total - (t.jumlah_bayar || 0))}
+                  </p>
+                )}
+                <Button onClick={() => viewNota(t)} variant="secondary" className="w-full mt-2" size="sm">
                   <Eye className="mr-2 h-3.5 w-3.5" /> Lihat Nota
                 </Button>
               </div>
@@ -163,14 +169,46 @@ export default function Nota() {
                   <span>Pembayaran</span>
                   <span className="capitalize">{selectedNota?.metode_pembayaran}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Dibayar</span>
+                  <span>{formatCurrency(selectedNota?.jumlah_bayar || 0)}</span>
+                </div>
+                <div className="flex justify-between font-semibold">
+                  <span>Sisa Tagihan</span>
+                  <span className={(selectedNota?.total || 0) - (selectedNota?.jumlah_bayar || 0) > 0 ? "text-destructive" : "text-success"}>
+                    {formatCurrency(Math.max(0, (selectedNota?.total || 0) - (selectedNota?.jumlah_bayar || 0)))}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Status</span>
+                  <span className="capitalize font-semibold">
+                    {selectedNota?.status === "belum_bayar" ? "Belum Bayar" : selectedNota?.status === "dp" ? "DP" : "Lunas"}
+                  </span>
+                </div>
               </div>
 
               <p className="text-center text-xs text-muted-foreground mt-4">Terima kasih atas pembelian Anda!</p>
             </div>
 
-            <Button onClick={handlePrint} className="w-full gradient-primary text-primary-foreground">
-              <Printer className="mr-2 h-4 w-4" /> Cetak Nota
-            </Button>
+            <div className="flex gap-2">
+              {selectedNota?.status !== "lunas" && (
+                <Button
+                  onClick={async () => {
+                    if (!selectedNota) return;
+                    await supabase.from("transaksi").update({ status: "lunas", jumlah_bayar: selectedNota.total }).eq("id", selectedNota.id);
+                    setSelectedNota({ ...selectedNota, status: "lunas", jumlah_bayar: selectedNota.total });
+                    loadTransaksi();
+                  }}
+                  variant="secondary"
+                  className="flex-1"
+                >
+                  Tandai Lunas
+                </Button>
+              )}
+              <Button onClick={handlePrint} className="flex-1 gradient-primary text-primary-foreground">
+                <Printer className="mr-2 h-4 w-4" /> Cetak Nota
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
