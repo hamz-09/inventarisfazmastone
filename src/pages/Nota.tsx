@@ -169,14 +169,46 @@ export default function Nota() {
                   <span>Pembayaran</span>
                   <span className="capitalize">{selectedNota?.metode_pembayaran}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Dibayar</span>
+                  <span>{formatCurrency(selectedNota?.jumlah_bayar || 0)}</span>
+                </div>
+                <div className="flex justify-between font-semibold">
+                  <span>Sisa Tagihan</span>
+                  <span className={(selectedNota?.total || 0) - (selectedNota?.jumlah_bayar || 0) > 0 ? "text-destructive" : "text-success"}>
+                    {formatCurrency(Math.max(0, (selectedNota?.total || 0) - (selectedNota?.jumlah_bayar || 0)))}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Status</span>
+                  <span className="capitalize font-semibold">
+                    {selectedNota?.status === "belum_bayar" ? "Belum Bayar" : selectedNota?.status === "dp" ? "DP" : "Lunas"}
+                  </span>
+                </div>
               </div>
 
               <p className="text-center text-xs text-muted-foreground mt-4">Terima kasih atas pembelian Anda!</p>
             </div>
 
-            <Button onClick={handlePrint} className="w-full gradient-primary text-primary-foreground">
-              <Printer className="mr-2 h-4 w-4" /> Cetak Nota
-            </Button>
+            <div className="flex gap-2">
+              {selectedNota?.status !== "lunas" && (
+                <Button
+                  onClick={async () => {
+                    if (!selectedNota) return;
+                    await supabase.from("transaksi").update({ status: "lunas", jumlah_bayar: selectedNota.total }).eq("id", selectedNota.id);
+                    setSelectedNota({ ...selectedNota, status: "lunas", jumlah_bayar: selectedNota.total });
+                    loadTransaksi();
+                  }}
+                  variant="secondary"
+                  className="flex-1"
+                >
+                  Tandai Lunas
+                </Button>
+              )}
+              <Button onClick={handlePrint} className="flex-1 gradient-primary text-primary-foreground">
+                <Printer className="mr-2 h-4 w-4" /> Cetak Nota
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
