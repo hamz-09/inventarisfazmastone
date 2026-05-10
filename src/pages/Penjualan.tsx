@@ -30,6 +30,8 @@ export default function Penjualan() {
   const [diskon, setDiskon] = useState(0);
   const [pajak, setPajak] = useState(0);
   const [metodePembayaran, setMetodePembayaran] = useState("cash");
+  const [statusBayar, setStatusBayar] = useState<"belum_bayar" | "dp" | "lunas">("lunas");
+  const [jumlahBayar, setJumlahBayar] = useState(0);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [transaksiList, setTransaksiList] = useState<any[]>([]);
