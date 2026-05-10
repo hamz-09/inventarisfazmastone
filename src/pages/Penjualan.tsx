@@ -221,6 +221,28 @@ export default function Penjualan() {
                   </Select>
                 </div>
 
+                <div>
+                  <Label>Status Pembayaran</Label>
+                  <Select value={statusBayar} onValueChange={(v: any) => { setStatusBayar(v); if (v === "lunas") setJumlahBayar(total); else if (v === "belum_bayar") setJumlahBayar(0); }}>
+                    <SelectTrigger className="bg-secondary border-border mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border">
+                      <SelectItem value="belum_bayar">Belum Bayar</SelectItem>
+                      <SelectItem value="dp">DP / Setengah</SelectItem>
+                      <SelectItem value="lunas">Lunas</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {statusBayar === "dp" && (
+                  <div>
+                    <Label>Jumlah Dibayar (DP)</Label>
+                    <Input type="number" value={jumlahBayar} onChange={(e) => setJumlahBayar(parseFloat(e.target.value) || 0)} min={0} max={total} className="bg-secondary border-border mt-1" />
+                    <p className="text-xs text-muted-foreground mt-1">Sisa: {formatCurrency(Math.max(0, total - jumlahBayar))}</p>
+                  </div>
+                )}
+
                 <div className="glass-card rounded-lg p-4 space-y-2">
                   <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
                   {diskon > 0 && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Diskon ({diskon}%)</span><span className="text-destructive">-{formatCurrency(diskonAmount)}</span></div>}
