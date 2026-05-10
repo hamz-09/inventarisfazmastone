@@ -12,6 +12,7 @@ interface TransaksiDetail {
   subtotal: number;
   diskon: number;
   pajak: number;
+  jumlah_bayar: number;
   metode_pembayaran: string;
   status: string;
   created_at: string;
