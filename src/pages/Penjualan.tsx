@@ -285,8 +285,8 @@ export default function Penjualan() {
                       <td className="p-4 font-medium">{formatCurrency(t.total)}</td>
                       <td className="p-4 hidden sm:table-cell capitalize text-muted-foreground">{t.metode_pembayaran}</td>
                       <td className="p-4">
-                        <span className={`text-xs px-2 py-1 rounded-full ${t.status === "lunas" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
-                          {t.status}
+                        <span className={`text-xs px-2 py-1 rounded-full capitalize ${t.status === "lunas" ? "bg-success/10 text-success" : t.status === "dp" ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}>
+                          {t.status === "belum_bayar" ? "Belum Bayar" : t.status === "dp" ? "DP" : "Lunas"}
                         </span>
                       </td>
                     </tr>
