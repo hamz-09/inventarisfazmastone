@@ -80,7 +80,9 @@ export default function Penjualan() {
     if (cart.length === 0) return;
     setLoading(true);
     try {
-      const nomorInvoice = `INV-${Date.now()}`;
+      const d = new Date();
+      const nomorInvoice = `FZ/${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getFullYear()).slice(-2)}/${String(Date.now()).slice(-5)}`;
+      const bayar = statusBayar === "lunas" ? total : statusBayar === "belum_bayar" ? 0 : jumlahBayar;
       const { data: transaksi, error: tErr } = await supabase.from("transaksi").insert({
         nomor_invoice: nomorInvoice,
         total,
@@ -88,7 +90,8 @@ export default function Penjualan() {
         diskon,
         pajak,
         metode_pembayaran: metodePembayaran,
-        status: "lunas",
+        status: statusBayar,
+        jumlah_bayar: bayar,
         user_id: user?.id,
       }).select().single();
 
@@ -108,10 +111,12 @@ export default function Penjualan() {
         await supabase.from("barang").update({ stok: c.barang.stok - c.jumlah }).eq("id", c.barang.id);
       }
 
-      toast({ title: "Transaksi Berhasil!", description: `Invoice: ${nomorInvoice}` });
+      toast({ title: "Transaksi & Invoice Dibuat!", description: `Invoice: ${nomorInvoice}` });
       setCart([]);
       setDiskon(0);
       setPajak(0);
+      setStatusBayar("lunas");
+      setJumlahBayar(0);
       setOpen(false);
       loadBarang();
       loadTransaksi();
